@@ -73,7 +73,7 @@ class UIData{
         this.UIGoods[index].subCount()
     }
 
-    // 获得购物车中商品总选中数量
+    // 重新封装获得购物车中商品总选中数量
     getCartTotalCount(){
         return this.UIGoods.reduce((totalCount, item) => {
             // 遍历UIGoods中的商品，统计商品总的选择数量
@@ -81,15 +81,21 @@ class UIData{
         },0)
     }
 
-    // 判断购物车中是否有商品
+    // 重新封装判断购物车中是否有商品
     hasGoodsInCart(){
         return this.getCartTotalCount() > 0
     }
 
-    // 判断选中商品总价格是否超过起送费
+    // 重新封装判断商品是否选中
+    isChoose(index){
+         return this.UIGoods[index].isChoose()
+    }
+
+    // 重新封装判断选中商品总价格是否超过起送费
     isOverInitDeliveryPrice(){
         return this.getCartTotalPrice() >= this.initDeliveryPrice
     }
+
 }
 
 // 整个界面
@@ -102,10 +108,11 @@ class UI{
         this.uiData = new UIData()
         // 获得页面中的DOM元素
         this.doms = {
-            container: document.querySelector('.goods-list')
+            goodsContainer: document.querySelector('.goods-list')
         }
         // 创建商品列表是一开始就要进行的，避免构造函数中代码臃肿，此处将该功能封装
         this.createHTML()
+
     }
 
     // 根据商品数据创建商品列表
@@ -120,7 +127,7 @@ class UI{
             // 调用createGood创建每个商品的数据
             let good = this.createGood(item.data.pic, item.data.title, item.data.desc, item.data.sellNumber, item.data.favorRate,item.data.price)
             // 将该商品添加到商品列表div
-            this.doms.container.insertAdjacentHTML("beforeend",good)
+            this.doms.goodsContainer.insertAdjacentHTML("beforeend",good)
         })
     }
 
@@ -155,17 +162,29 @@ class UI{
     // 重新封装添加商品数量 商品数量更新后也应该更新其显示状态
     addCount(index){
         this.uiData.addCount(index)
-        this.updateGoodsItem()
+        this.updateGoodsItem(index)
     }
 
     // 重新封装减少商品数量
     subCount(index){
         this.uiData.subCount(index)
-        this.updateGoodsItem()
+        this.updateGoodsItem(index)
     }
 
     // 更新商品显示状态
     updateGoodsItem(index){
+        // 先拿到该商品
+        let good = this.doms.goodsContainer.children[index]
+        // 判断该商品是否应该有active属性 (CSS样式中设置的类属性，如果有，则显示 UI界面的 -号 )
+        if(this.uiData.isChoose(index)){
+            good.classList.add('active')
+        }else{
+            good.classList.remove('active')
+        }
+        // 找到该商品的价格对象
+        let goodSpan = good.querySelector('.goods-btns span')
+        // 更新商品价格
+        goodSpan.textContent = this.uiData.UIGoods[index].count
 
     }
 }
